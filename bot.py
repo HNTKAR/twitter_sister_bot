@@ -12,19 +12,22 @@ ACCESS_TOKEN = "key"
 ACCESS_SECRET = "key"
 auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
 api = tweepy.API(auth)
-i=0
 
 datec=["月","火","水","木","金","土","日"]
 status_morning=[
 "レポート提出今日じゃないの?終わってないけど大丈夫?"
 ,"お兄ちゃんまだレポー朝だよ!!起きてお兄ちゃん!!レポート提出しなきゃ!!"
 ,"電車が止まってもレポート遅れにならないようにね!!"
+,"電車で寝過ごさないようにしてね?"
 ]
 status_night=[
 "Twitterなんてしててレポート終わるの?"
 ,"お兄ちゃんまだ寝ちゃだめだよ!!"
 ,"頑張ってるお兄ちゃんにお夜食持ってきたよ〜"
+,"頑張ってるお兄ちゃんにコーヒー入れてきたよ〜"
 ,"お兄ちゃんまだレポートやってるの?無理しないでね。はい、コーヒーだよ。"
+,"台風が来てるからって休みになるとは限らないんだよ?"
+,"お夕飯作ってきたよお兄ちゃん。ちゃんと食べてね?"
 ]
 status_all=[
 "もう!!また栄養剤なんて飲んで!!体に悪いよ?"
@@ -36,6 +39,16 @@ status_all=[
 ,"表紙の確認はした?"
 ,"回路図間違えてない?"
 ,"ちゃんと引用したら引用元を書いておこうね?"
+,"分からないからって諦めちゃだめだよ"
+,"Twitterやって現実逃避してても朝になったら現実はやってくるよ"
+,"見てみてお兄ちゃん!!無安定マルチバイブレータ作ったよ!!"
+,"ブラシレスモータを回せるMDつくりたいな〜"
+,"python教えてよお兄ちゃん!!"
+,"レジスタのたたきかた教えて〜"
+,"お兄ちゃんすごーい!!私に構造体教えて!!"
+,"三相交流モーターを回そうよ!!"
+,"トランジスタってすごいね!!"
+,"私VVVFすき〜"
 ]
 status17="" #投稿するツイート
 status18="" #投稿するツイート
@@ -66,11 +79,16 @@ def timecodeint():
 i=0
 f=0
 tls=0
+msn="sister_Healing_"
 
 timeline=api.home_timeline(count=1)
 for status in timeline:
     sid_old=status.id
-   
+    
+status_night_c=int(len(status_night))-1
+status_morning_c=int(len(status_morning))-1
+status_all_c=int(len(status_all))-1
+
 while True:
     sid=[]
     if i==0:#時間読み込み
@@ -83,8 +101,8 @@ while True:
 
     if i==1:#内容生成
         if tcodei[3]<7:#7時前
-            xxx=random.randint(0,3)
-            yyy=random.randint(0,8)
+            xxx=random.randint(0,status_night_c)
+            yyy=random.randint(0,status_all_c)
             zzz=random.randint(0,1)
             if zzz==0:
                 statusx=status_night[xxx]
@@ -92,8 +110,8 @@ while True:
                 statusx=status_all[yyy]
 
         elif tcodei[3]>19:#7時前
-            xxx=random.randint(0,3)
-            yyy=random.randint(0,8)
+            xxx=random.randint(0,status_night_c)
+            yyy=random.randint(0,status_all_c)
             zzz=random.randint(0,1)
             if zzz==0:
                 statusx=status_night[xxx]
@@ -101,8 +119,8 @@ while True:
                 statusx=status_all[yyy]
 
         elif tcodei[3]<12:#7時以降
-            xxx=random.randint(0,2)
-            yyy=random.randint(0,8)
+            xxx=random.randint(0,status_morning_c)
+            yyy=random.randint(0,status_all_c)
             zzz=random.randint(0,1)
             if zzz==0:
                 statusx=status_morning[xxx]
@@ -110,7 +128,7 @@ while True:
                 statusx=status_all[yyy]
 
         else:
-            yyy=random.randint(0,8)
+            yyy=random.randint(0,status_all_c)
             statusx=status_all[yyy]
 
         statusz=statusx+"\n\n\n"+statusy#書き込み
@@ -123,9 +141,13 @@ while True:
         i=i+1
     if tls==0:
         try:#フォロバ
-            follows=tweepy.Cursor(api.followers).items()
-            for follower in follows:
-                follower.follow()
+            merlis=api.followers_ids(msn)
+            mlis=api.friends_ids(msn)
+            ab=set(merlis)-set(mlis)
+            follows=list(ab)
+            #print (follows)
+            for nfnl in follows:
+                api.create_friendship(nfnl)
         except:
             pass
             #print("follow error")
@@ -146,6 +168,9 @@ while True:
                     elif status.text.find("ぽやしみ")!=-1:
                         statusz="おやすみ、お兄ちゃん!!しっかり休んでね!!"
                         f=1
+                    elif status.text.find("考察")!=-1:
+                        statusz="レポートの考察その解釈で大丈夫なの?"
+                        f=1
                     elif status.text.find("帰宅")!=-1 and 21<tcodei[3]:
                         statusz="課外活動と私どっちが大事なの!?早く休んでね?"
                         f=1
@@ -159,8 +184,9 @@ while True:
                         sid.append(status.id)
                         screen_name=str(status.author.screen_name)
                         statusz="@"+screen_name+" "+statusz
-                        print(statusz)
+                        #print(statusz)
                         #print(sid)
+                        api.create_favorite(status.id)
                         api.update_status(status=statusz,in_reply_to_status_id=status.id)
                         f=0
             sid_old=sid[0]
