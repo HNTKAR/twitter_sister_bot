@@ -1,4 +1,3 @@
-#-*- coding:utf-8 -*-
 import tweepy
 import datetime
 import time
@@ -64,99 +63,91 @@ def timecodeint():
     return sny,snm,snd,snh,snn,sns
 
 i=0
-f=0
-tls=0
-sid_old=1013455124549627903
+a=[0,0]
+status_old_id=1013455124549627904
 while True:
-    sid=[]
-    # if i==0:#時間読み込み
-    #     tcodes=timecodestr()
-    #     tcodei=timecodeint()
-    #     if tcodei[4]==0 or tcodei[4]==15 or tcodei[4]==30 or tcodei[4]==45:
-    #         i=1
-    #         dtx=tcodes[6]
-    #         statusy=tcodes[3]+"時"+tcodes[4]+"分"
-    #
-    # if i==1:#内容生成
-    #     if tcodei[3]<7:#7時前
-    #         xxx=random.randint(0,3)
-    #         yyy=random.randint(0,8)
-    #         zzz=random.randint(0,1)
-    #         if zzz==0:
-    #             statusx=status_night[xxx]
-    #         else:
-    #             statusx=status_all[yyy]
-    #
-    #     elif tcodei[3]>19:#7時前
-    #         xxx=random.randint(0,3)
-    #         yyy=random.randint(0,8)
-    #         zzz=random.randint(0,1)
-    #         if zzz==0:
-    #             statusx=status_night[xxx]
-    #         else:
-    #             statusx=status_all[yyy]
-    #
-    #     elif tcodei[3]<12:#7時以降
-    #         xxx=random.randint(0,2)
-    #         yyy=random.randint(0,8)
-    #         zzz=random.randint(0,1)
-    #         if zzz==0:
-    #             statusx=status_morning[xxx]
-    #         else:
-    #             statusx=status_all[yyy]
-    #
-    #     else:
-    #         yyy=random.randint(0,8)
-    #         statusx=status_all[yyy]
-    #
-    #     statusz=statusx+"\n\n\n"+statusy#書き込み
-    #     #print(statusz)
-    #     api.update_status(status=statusz)
-    #
-    # if i>90:
-    #     i=0
-    # if i>0:
-    #     i=i+1
-    #
-    # try:#フォロバ
-    #     for follower in tweepy.Cursor(api.followers).items():
-    #         follower.follow()
-    # except:
-    #     print("follow error")
-    #try:#リプ
-    timeline=api.home_timeline(since_id=sid_old)
-    for status in timeline:
-        saseutf=status.author.screen_name.encode("UTF-8")
-        if saseutf!=b"sister_Healing_":
-            if status.text.find("おやすみ")!=-1:
-                statusz="おやすみ、お兄ちゃん!!しっかり休んでね!!"
-                f=1
-            elif status.text.find("おはよう")!=-1:
-                statusz="おはよう、お兄ちゃん!!ちゃんと起きれたね!!"
-                f=1
-            elif status.text.find("ぽきた")!=-1:
-                statusz="おはよう、お兄ちゃん!!ちゃんと起きれたね!!"
-                f=1
-            elif status.text.find("ぽやしみ")!=-1:
-                statusz="おやすみ、お兄ちゃん!!しっかり休んでね!!"
-                f=1
-            elif status.text.find("絶起")!=-1:
-                statusz="お兄ちゃん寝坊しちゃったの?ちゃんと寝ないからだよ!!"
-                f=1
-            if f==1:
-                sid.append(status.id)
-                screen_name=str(status.author.screen_name)
-                statusz="@"+screen_name+" "+statusz
-                print(statusz)
-                print(sid)
-                api.update_status(status=statusz,in_reply_to_status_id=status.id)
-            f=0
     try:
-        sid_old=sid[0]
+        timeline=api.mentions_timeline(count=5)
+        for status in timeline:
+            status_id=status.id
+            if status_id>status_old_id:
+                a.append(status_id)
+                print(status_id)
+                screen_name=status.author.screen_name.encode("UTF-8")
+                reply_text="@"+screen_name+" "+"はじめまして、お兄ちゃん!!"
+                api.update_status(status=reply_text,in_reply_to_status_id=status_id)
+        a.sort()
+        status_old_id=a[0]
     except:
         pass
-    #except:
-    #    print("reply error")
+    if i==0:
+        tcodes=timecodestr()
+        tcodei=timecodeint()
+        if tcodei[4]==0:
+            i=1
+        elif tcodei[4]==15:
+            i=1
+        elif tcodei[4]==30:
+            i=1
+        elif tcodei[4]==45:
+            i=1
+        else:
+            i=0
+        dtx=tcodes[6]
+        statusy=tcodes[0]+"年"+tcodes[1]+"月"+tcodes[2]+"日"+"("+datec[dtx]+")"+"\n"+tcodes[3]+"時"+tcodes[4]+"分"
 
-    #try:#いいね
+    if i==1:
+        if tcodei[3]<7:#7時前
+            xxx=random.randint(0,3)
+            yyy=random.randint(0,8)
+            zzz=random.randint(0,1)
+            if zzz==0:
+                statusx=status_night[xxx]
+            else:
+                statusx=status_all[yyy]
+
+        elif tcodei[3]>19:#7時前
+            xxx=random.randint(0,3)
+            yyy=random.randint(0,8)
+            zzz=random.randint(0,1)
+            if zzz==0:
+                statusx=status_night[xxx]
+            else:
+                statusx=status_all[yyy]
+
+        elif tcodei[3]<12:#7時以降
+            xxx=random.randint(0,2)
+            yyy=random.randint(0,8)
+            zzz=random.randint(0,1)
+            if zzz==0:
+                statusx=status_morning[xxx]
+            else:
+                statusx=status_all[yyy]
+
+        else:
+            yyy=random.randint(0,8)
+            statusx=status_all[yyy]
+
+
+
+    if i==1:
+        statusz=statusx+"\n\n\n"+statusy
+        #print(statusz)
+        api.update_status(status=statusz)
+        
+        try:
+            for follower in tweepy.Cursor(api.followers).items():
+                follower.follow()
+        except:
+            pass
+        try:
+            timeline=api.mentions_timeline()
+            for status in timeline:
+                print (status.text)
+        except:
+            print("TL error")
+    if i>65:
+        i=0
+    if i>0:
+        i=i+1
     time.sleep(1)
