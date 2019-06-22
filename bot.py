@@ -64,7 +64,13 @@ def timecodeint():
     return sny,snm,snd,snh,snn,sns
 
 i=0
-sid_old=1013455124549627903
+f=0
+tls=0
+
+timeline=api.home_timeline(count=1)
+for status in timeline:
+    sid_old=status.id
+   
 while True:
     sid=[]
     if i==0:#時間読み込み
@@ -107,37 +113,63 @@ while True:
             yyy=random.randint(0,8)
             statusx=status_all[yyy]
 
-    statusz=statusx+"\n\n\n"+statusy#書き込み
-    api.update_status(status=statusz)
-    
+        statusz=statusx+"\n\n\n"+statusy#書き込み
+        #print(statusz)
+        api.update_status(status=statusz)
+
     if i>90:
         i=0
     if i>0:
         i=i+1
-
-    try:#フォロバ
-        for follower in tweepy.Cursor(api.followers).items():
-            follower.follow()
-    except:
-        print("follow error")
-    try:#リプ
-        timeline=api.mentions_timeline(since_id=sid_old)
-        for status in timeline:
-            saseutf=status.author.screen_name.encode("UTF-8")
-            if saseutf!=b"sister_Healing_":
-                if status.text.find("おやすみ")!=-1:
-                    statusz="おやすみ、お兄ちゃん!!"
-                elif status.text.find("おはよう")!=-1:
-                    statusz="おはよう、お兄ちゃん!!"
-                else:
-                    statusz="はじめまして、お兄ちゃん!!"
-                sid.append(status.id)
-                screen_name=str(status.author.screen_name)
-                statusz="@"+screen_name+" "+statusz
-                print(statusz)
-                print(sid)
-                api.update_status(status=statusz,in_reply_to_status_id=status.id)
-        sid_old=sid[0]
-    except:
-        pass
+    if tls==0:
+        try:#フォロバ
+            follows=tweepy.Cursor(api.followers).items()
+            for follower in follows:
+                follower.follow()
+        except:
+            pass
+            #print("follow error")
+        try:#リプ
+            timeline=api.home_timeline(since_id=sid_old)
+            for status in timeline:
+                saseutf=status.author.screen_name.encode("UTF-8")
+                if saseutf!=b"sister_Healing_":
+                    if status.text.find("おやすみ")!=-1:
+                        statusz="おやすみ、お兄ちゃん!!しっかり休んでね!!"
+                        f=1
+                    elif status.text.find("おはよう")!=-1:
+                        statusz="おはよう、お兄ちゃん!!ちゃんと起きれたね!!"
+                        f=1
+                    elif status.text.find("ぽきた")!=-1:
+                        statusz="おはよう、お兄ちゃん!!ちゃんと起きれたね!!"
+                        f=1
+                    elif status.text.find("ぽやしみ")!=-1:
+                        statusz="おやすみ、お兄ちゃん!!しっかり休んでね!!"
+                        f=1
+                    elif status.text.find("帰宅")!=-1 and 21<tcodei[3]:
+                        statusz="課外活動と私どっちが大事なの!?早く休んでね?"
+                        f=1
+                    elif status.text.find("帰宅")!=-1 and 6>tcodei[3]:
+                        statusz="課外活動と私どっちが大事なの!?早く休んでね?"
+                        f=1
+                    elif status.text.find("絶起")!=-1:
+                        statusz="お兄ちゃん寝坊しちゃったの?ちゃんと寝ないからだよ!!"
+                        f=1
+                    if f==1:
+                        sid.append(status.id)
+                        screen_name=str(status.author.screen_name)
+                        statusz="@"+screen_name+" "+statusz
+                        print(statusz)
+                        #print(sid)
+                        api.update_status(status=statusz,in_reply_to_status_id=status.id)
+                        f=0
+            sid_old=sid[0]
+        except:
+            pass
+            #print("reply Error")
+    if tls<65:
+        tls=tls+1
+    else:
+        tls=0
+    #try:#いいね
     time.sleep(1)
